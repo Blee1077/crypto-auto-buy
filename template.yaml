@@ -1,82 +1,91 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  tmp
-
-  Sample SAM Template for tmp
+  crypto-auto-buy
 
 Resources:
-  StockTradingStateMachine:
-    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+  CryptoAutoBuyStateMachine:
+    Type: AWS::Serverless::StateMachine
     Properties:
-      DefinitionUri: statemachine/stock_trader.asl.json
+      DefinitionUri: statemachine/crypto_autobuy.asl.json
       DefinitionSubstitutions:
-        StockCheckerFunctionArn: !GetAtt StockCheckerFunction.Arn
-        StockSellerFunctionArn: !GetAtt StockSellerFunction.Arn
-        StockBuyerFunctionArn: !GetAtt StockBuyerFunction.Arn
-        DDBPutItem: !Sub arn:${AWS::Partition}:states:::dynamodb:putItem
-        DDBTable: !Ref TransactionTable
+        CoinbaseBuyFunctionArn: !GetAtt CoinbaseBuyFunction.Arn
+        KuCoinBuyFunctionArn: !GetAtt KuCoinBuyFunction.Arn
+        KuCoinWaitFunctionArn: !GetAtt KuCoinWaitFunction.Arn
       Events:
-        HourlyTradingSchedule:
-          Type: Schedule # More info about Schedule Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-statemachine-schedule.html
+        CryptoAutoBuySchedule:
+          Type: Schedule
           Properties:
-            Description: Schedule to run the stock trading state machine every hour
-            Enabled: False # This schedule is disabled by default to avoid incurring charges.
-            Schedule: "rate(1 hour)"
-      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+            Description: Automatically buys cryptocurrencies based on schedule rules
+            Enabled: true
+            Schedule: cron(30 6 1,15 * ? *) # Twice a month, 1st and 15th at 6:30am UTC
+            Input: """{'secret_bucket': 'crypto-auto-buy', 'cb_secret_key': 'cbpro-api-secret.json',
+                      'kc_secret_key': 'kucoin-api-secret.json', 'MONTHLY_FREQ': 2, 'MONTHLY_FUND': 400,
+                      'RATIO_BTC': 0.425, 'RATIO_ETH': 0.425, 'RATIO_OPCT': 0.1, 'RATIO_TRAC': 0.9}"""
+      Policies:
         - LambdaInvokePolicy:
-            FunctionName: !Ref StockCheckerFunction
+            FunctionName: !Ref CoinbaseBuyFunction
         - LambdaInvokePolicy:
-            FunctionName: !Ref StockSellerFunction
+            FunctionName: !Ref KuCoinBuyFunction
         - LambdaInvokePolicy:
-            FunctionName: !Ref StockBuyerFunction
-        - DynamoDBWritePolicy:
-            TableName: !Ref TransactionTable
+            FunctionName: !Ref KuCoinWaitFunction
 
-  StockCheckerFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+  UtilityLayer:
+    Type: AWS::Serverless::LayerVersion
     Properties:
-      CodeUri: functions/stock_checker/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
+      ContentUri: layer
+      CompatibleRuntimes:
+        - python3.9
+      Metadata:
+        BuildMethod: python3.9
 
-  StockSellerFunction:
+  CoinbaseBuyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/stock_seller/
+      CodeUri: functions/coinbase_buy/
       Handler: app.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
+      Layers:
+      - !Ref UtilityLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: "crypto-auto-buy"
 
-  StockBuyerFunction:
+  KuCoinBuyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/stock_buyer/
+      CodeUri: functions/kucoin_buy/
       Handler: app.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
+      Layers:
+      - !Ref UtilityLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: "crypto-auto-buy"
 
-  TransactionTable:
-    Type: AWS::Serverless::SimpleTable # More info about SimpleTable Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-simpletable.html
+  KuCoinWaitFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      PrimaryKey:
-        Name: Id
-        Type: String
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+      CodeUri: functions/kucoin_wait/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Layers:
+      - !Ref UtilityLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: "crypto-auto-buy"
 
 Outputs:
-  # StockTradingStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
-  # Find out more about other implicit resources you can reference within SAM
-  # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-generated-resources.html
-  StockTradingStateMachineArn:
-    Description: "Stock Trading State machine ARN"
-    Value: !Ref StockTradingStateMachine
-  StockTradingStateMachineRoleArn:
-    Description: "IAM Role created for Stock Trading State machine based on the specified SAM Policy Templates"
-    Value: !GetAtt StockTradingStateMachineRole.Arn
+  # CryptoAutoBuyStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
+  CryptoAutoBuyStateMachineArn:
+    Description: "Crypto AutoBuy State machine ARN"
+    Value: !Ref CryptoAutoBuyStateMachine
+  CryptoAutoBuyStateMachineRoleArn:
+    Description: "IAM Role created for Crypto AutoBuy State machine based on the specified SAM Policy Templates"
+    Value: !GetAtt CryptoAutoBuyStateMachineRole.Arn

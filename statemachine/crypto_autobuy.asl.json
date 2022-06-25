@@ -1,0 +1,53 @@
+{   
+    "Comment": "A state machine that buys cryptocurrencies.",
+    "StartAt": "BuyFromCoinbase",
+    "States": {
+      "BuyFromCoinbase": {
+        "Type": "Task",
+        "Resource": "${CoinbaseBuyFunctionArn}",
+        "ResultPath": "$.cb_pro_result",
+        "Next": "Wait"
+      },
+      "Wait": {
+        "Type": "Wait",
+        "Seconds": 2700,
+        "Next": "CheckTransferArrivedKucoin"
+      },
+      "CheckTransferArrivedKucoin": {
+        "Type": "Task",
+        "Resource": "${KuCoinWaitFunctionArn}",
+        "ResultPath": "$.check_result",
+        "Next": "DetermineAction"
+      },
+      "DetermineAction": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.check_result",
+            "NumericEquals": 0,
+            "Next": "WaitForTransfer"
+          },
+          {
+            "Variable": "$.check_result",
+            "NumericEquals": 1,
+            "Next": "BuyFromKucoin"
+          }
+        ],
+        "Default": "CatchError"
+      },
+      "WaitForTransfer": {
+        "Type": "Wait",
+        "Seconds": 600,
+        "Next": "CheckTransferArrivedKucoin"
+      },
+      "BuyFromKucoin": {
+        "Type": "Task",
+        "Resource": "${KuCoinBuyFunctionArn}",
+        "ResultPath": "$.kucoin_result",
+        "End": true
+      },
+      "CatchError": {
+        "Type": "Fail"
+      }
+    }
+  }
