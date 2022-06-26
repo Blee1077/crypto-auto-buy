@@ -72,6 +72,13 @@ Resources:
         - S3ReadPolicy:
             BucketName: "crypto-auto-buy"
 
+  CryptoBuyTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: "superbrandonlee@hotmail.com"
+        Protocol: email
+  
   ExecutionFailureAlarm:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
@@ -90,13 +97,6 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - !Ref CryptoBuyTopic
-
-    CryptoBuyTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      Subscription:
-      - Endpoint: superbrandonlee@hotmail.com
-        Protocol: email
 
 Outputs:
   # CryptoBuySchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
