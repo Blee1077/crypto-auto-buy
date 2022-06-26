@@ -4,7 +4,7 @@ Description: >
   crypto-auto-buy
 
 Resources:
-  CryptoAutoBuyStateMachine:
+  CryptoBuyStateMachine:
     Type: AWS::Serverless::StateMachine
     Properties:
       DefinitionUri: statemachine/crypto_autobuy.asl.json
@@ -13,15 +13,13 @@ Resources:
         KuCoinBuyFunctionArn: !GetAtt KuCoinBuyFunction.Arn
         KuCoinWaitFunctionArn: !GetAtt KuCoinWaitFunction.Arn
       Events:
-        CryptoAutoBuySchedule:
+        CryptoBuySchedule:
           Type: Schedule
           Properties:
             Description: Automatically buys cryptocurrencies based on schedule rules
             Enabled: true
             Schedule: cron(30 6 1,15 * ? *) # Twice a month, 1st and 15th at 6:30am UTC
-            Input: """{'secret_bucket': 'crypto-auto-buy', 'cb_secret_key': 'cbpro-api-secret.json',
-                      'kc_secret_key': 'kucoin-api-secret.json', 'MONTHLY_FREQ': 2, 'MONTHLY_FUND': 400,
-                      'RATIO_BTC': 0.425, 'RATIO_ETH': 0.425, 'RATIO_OPCT': 0.1, 'RATIO_TRAC': 0.9}"""
+            Input: '{"secret_bucket": "crypto-auto-buy", "cb_secret_key": "cbpro-api-secret.json", "kc_secret_key": "kucoin-api-secret.json", "MONTHLY_FREQ": 2, "MONTHLY_FUND": 400, "RATIO_BTC": 0.425, "RATIO_ETH": 0.425, "RATIO_OPCT": 0.1, "RATIO_TRAC": 0.9}'
       Policies:
         - LambdaInvokePolicy:
             FunctionName: !Ref CoinbaseBuyFunction
@@ -33,11 +31,11 @@ Resources:
   UtilityLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: layer
+      ContentUri: util_layer
       CompatibleRuntimes:
         - python3.9
-      Metadata:
-        BuildMethod: python3.9
+    Metadata:
+      BuildMethod: python3.9
 
   CoinbaseBuyFunction:
     Type: AWS::Serverless::Function
@@ -82,10 +80,10 @@ Resources:
             BucketName: "crypto-auto-buy"
 
 Outputs:
-  # CryptoAutoBuyStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
-  CryptoAutoBuyStateMachineArn:
+  # CryptoBuyStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
+  CryptoBuyStateMachineArn:
     Description: "Crypto AutoBuy State machine ARN"
-    Value: !Ref CryptoAutoBuyStateMachine
-  CryptoAutoBuyStateMachineRoleArn:
+    Value: !Ref CryptoBuyStateMachine
+  CryptoBuyStateMachineRoleArn:
     Description: "IAM Role created for Crypto AutoBuy State machine based on the specified SAM Policy Templates"
-    Value: !GetAtt CryptoAutoBuyStateMachineRole.Arn
+    Value: !GetAtt CryptoBuyStateMachineRole.Arn
