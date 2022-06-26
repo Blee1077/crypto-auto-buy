@@ -3,6 +3,17 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   crypto-auto-buy
 
+Globals:
+  Function:
+    Runtime: python3.9
+    Handler: app.lambda_handler
+    Timeout: 600
+    MemorySize: 500
+    Layers:
+      - !Ref UtilityLayer
+    Architectures:
+        - x86_64
+
 Resources:
   CryptoBuyStateMachine:
     Type: AWS::Serverless::StateMachine
@@ -41,12 +52,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/coinbase_buy/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Layers:
-      - !Ref UtilityLayer
       Policies:
         - S3ReadPolicy:
             BucketName: "crypto-auto-buy"
@@ -55,12 +60,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/kucoin_buy/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Layers:
-      - !Ref UtilityLayer
       Policies:
         - S3ReadPolicy:
             BucketName: "crypto-auto-buy"
@@ -69,18 +68,38 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/kucoin_wait/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Layers:
-      - !Ref UtilityLayer
       Policies:
         - S3ReadPolicy:
             BucketName: "crypto-auto-buy"
 
+  ExecutionFailureAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: 'Sends an alarm when the crypto auto-buy state machine fails.'
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+         - Name: StateMachineArn
+           Value: !Ref CryptoBuyStateMachine
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 21600
+      Threshold: 1
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref CryptoBuyTopic
+
+    CryptoBuyTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: superbrandonlee@hotmail.com
+        Protocol: email
+
 Outputs:
-  # CryptoBuyStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
+  # CryptoBuySchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
   CryptoBuyStateMachineArn:
     Description: "Crypto AutoBuy State machine ARN"
     Value: !Ref CryptoBuyStateMachine
