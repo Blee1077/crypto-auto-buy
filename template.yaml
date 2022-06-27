@@ -10,7 +10,7 @@ Globals:
     Timeout: 600
     MemorySize: 500
     Layers:
-      - !Ref UtilityLayer
+      - !Ref CryptoBuyUtilityLayer
     Architectures:
         - x86_64
 
@@ -44,7 +44,7 @@ Resources:
         - LambdaInvokePolicy:
             FunctionName: !Ref KuCoinWaitFunction
 
-  UtilityLayer:
+  CryptoBuyUtilityLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
       ContentUri: util_layer
