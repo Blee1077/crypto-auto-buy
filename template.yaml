@@ -15,9 +15,9 @@ Globals:
         - x86_64
     Environment:
       Variables:
-        SECRET_BUCKET: !Ref CryptoBuyS3Bucket # S3 bucket containing secrets
-        COINBASE_SECRET_KEY: "cbpro-api-secret.json" # File containing Coinbase Pro API key
-        KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key
+        SECRET_BUCKET: !Ref CryptoBuyS3Bucket # S3 bucket containing secrets that will be created when the stack deploys
+        COINBASE_SECRET_KEY: "cbpro-api-secret.json" # File containing Coinbase Pro API key, you put this in (structure is defined in README)
+        KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key, you put this in (structure is defined in README)
         MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
         MONTHLY_FUND: 400 # How much in £ to invest per month
         RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to spend on BTC
