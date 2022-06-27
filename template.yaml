@@ -22,8 +22,8 @@ Globals:
         MONTHLY_FUND: 400 # How much in £ to invest per month
         RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to spend on BTC
         RATIO_ETH: 0.425 # Proportion of MONTHLY_FUND to spend on ETH
-        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on BTC
-        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on BTC
+        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on OPCT
+        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on TRAC
 
 Parameters:
   SNSEmailParameter:
