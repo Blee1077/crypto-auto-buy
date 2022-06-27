@@ -15,7 +15,7 @@ Globals:
         - x86_64
     Environment:
       Variables:
-        SECRET_BUCKET: "crypto-auto-buy" # S3 bucket containing secrets
+        SECRET_BUCKET: !Ref CryptoBuyS3Bucket # S3 bucket containing secrets
         COINBASE_SECRET_KEY: "cbpro-api-secret.json" # File containing Coinbase Pro API key
         KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key
         MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
@@ -54,6 +54,18 @@ Resources:
         - LambdaInvokePolicy:
             FunctionName: !Ref KuCoinWaitFunction
 
+  CryptoBuyS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: crypto-auto-buy
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
   CryptoBuyUtilityLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -69,7 +81,7 @@ Resources:
       CodeUri: functions/coinbase_buy/
       Policies:
         - S3ReadPolicy:
-            BucketName: "crypto-auto-buy"
+            BucketName: !Ref CryptoBuyS3Bucket
 
   KuCoinBuyFunction:
     Type: AWS::Serverless::Function
@@ -77,7 +89,7 @@ Resources:
       CodeUri: functions/kucoin_buy/
       Policies:
         - S3ReadPolicy:
-            BucketName: "crypto-auto-buy"
+            BucketName: !Ref CryptoBuyS3Bucket
 
   KuCoinWaitFunction:
     Type: AWS::Serverless::Function
@@ -85,7 +97,7 @@ Resources:
       CodeUri: functions/kucoin_wait/
       Policies:
         - S3ReadPolicy:
-            BucketName: "crypto-auto-buy"
+            BucketName: !Ref CryptoBuyS3Bucket
 
   CryptoBuyTopic:
     Type: AWS::SNS::Topic
