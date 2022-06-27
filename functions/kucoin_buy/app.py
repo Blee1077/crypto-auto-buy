@@ -1,4 +1,5 @@
 import time
+import os
 import logging
 from kucoin.client import Client
 from utilities import load_json
@@ -11,13 +12,13 @@ def truncate_float(n, places):
 def lambda_handler(event, context):
     try:
         # Set up KuCoin client
-        kucoin_secrets = load_json(event['secret_bucket'], event['kc_secret_key'])
+        kucoin_secrets = load_json(os.environ['SECRET_BUCKET'], os.environ['KUCOIN_SECRET_KEY'])
         client = Client(kucoin_secrets['key'], kucoin_secrets['secret'], kucoin_secrets['passphrase'])
         
         # Log crypto ratio values and check ratios add to one
-        logging.info(f"Ratio of TRAC to buy: {event['RATIO_TRAC']}")
-        logging.info(f"Ratio of OPCT to buy: {event['RATIO_OPCT']}")
-        assert((float(event['RATIO_TRAC']) + float(event['RATIO_OPCT'])) == 1), "Ratios don't sum to 1!\n"
+        logging.info(f"Ratio of TRAC to buy: {os.environ['RATIO_TRAC']}")
+        logging.info(f"Ratio of OPCT to buy: {os.environ['RATIO_OPCT']}")
+        assert((float(os.environ['RATIO_TRAC']) + float(os.environ['RATIO_OPCT'])) == 1), "Ratios don't sum to 1!\n"
             
         # Check LTC balance is not zero and is all available to use in the trade account
         LTC_acc = client.get_accounts('LTC', 'trade')[0]
@@ -45,9 +46,9 @@ def lambda_handler(event, context):
         
         # Calculate how much to use to buy ETH and LTC, denominator takes into account the trading fee
         ETH_precision = client.get_currency('ETH')['precision']
-        BUY_TRAC_ETH = (float(event["RATIO_TRAC"]) * float(ETH_acc['balance'])) / 1.001
+        BUY_TRAC_ETH = (float(os.environ['RATIO_TRAC']) * float(ETH_acc['balance'])) / 1.001
         BUY_TRAC_ETH = truncate_float(BUY_TRAC_ETH, ETH_precision-2) # truncate to required precision
-        BUY_OPCT_ETH = (float(event["RATIO_OPCT"]) * float(ETH_acc['balance'])) / 1.001
+        BUY_OPCT_ETH = (float(os.environ['RATIO_OPCT']) * float(ETH_acc['balance'])) / 1.001
         BUY_OPCT_ETH = truncate_float(BUY_OPCT_ETH, ETH_precision-2)
         logging.info(f"Amount of ETH used to buy TRAC: {BUY_TRAC_ETH}")
         logging.info(f"Amount of ETH used to buy OPCT: {BUY_OPCT_ETH}")

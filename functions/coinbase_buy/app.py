@@ -1,4 +1,5 @@
 import cbpro
+import os
 import time
 import logging
 from utilities import load_json
@@ -31,25 +32,25 @@ def get_accounts(auth_client):
 def lambda_handler(event, context):
     try:
         # Load in Coinbase pro secrets and create authenticated client
-        cbpro_secrets = load_json(event['secret_bucket'], event['cb_secret_key'])
+        cbpro_secrets = load_json(os.environ['SECRET_BUCKET'], os.environ['COINBASE_SECRET_KEY'])
         auth_client = cbpro.AuthenticatedClient(cbpro_secrets['key'], cbpro_secrets['secret'], cbpro_secrets['passphrase'])
         
         # Get Coinbase pro accounts
         acc_dict = get_accounts(auth_client)
         
         # Log environment variables
-        logging.info(f"Total monthly buy funds: £{event['MONTHLY_FUND']}")
-        logging.info(f"Buy frequency per month: {event['MONTHLY_FREQ']}")
-        logging.info(f"Ratio of ETH to buy: {event['RATIO_ETH']}")
-        logging.info(f"Ratio of BTC to buy: {event['RATIO_BTC']}")
+        logging.info(f"Total monthly buy funds: £{os.environ['MONTHLY_FUND']}")
+        logging.info(f"Buy frequency per month: {os.environ['MONTHLY_FREQ']}")
+        logging.info(f"Ratio of ETH to buy: {os.environ['RATIO_ETH']}")
+        logging.info(f"Ratio of BTC to buy: {os.environ['RATIO_BTC']}")
         
-        RATIO_LTC = 1 - (float(event['RATIO_ETH']) + float(event['RATIO_BTC']))
+        RATIO_LTC = 1 - (float(os.environ['RATIO_ETH']) + float(os.environ['RATIO_BTC']))
         logging.info(f"Ratio of LTC to buy: {RATIO_LTC}")
         
         # Calculate how much to use to buy ETH and LTC
-        BUY_GBP = int(event["MONTHLY_FUND"]) / int(event['MONTHLY_FREQ'])
-        BUY_ETH_GBP = BUY_GBP * float(event["RATIO_ETH"])
-        BUY_BTC_GBP = BUY_GBP * float(event["RATIO_BTC"])
+        BUY_GBP = int(os.environ['MONTHLY_FUND']) / int(os.environ['MONTHLY_FREQ'])
+        BUY_ETH_GBP = BUY_GBP * float(os.environ['RATIO_ETH'])
+        BUY_BTC_GBP = BUY_GBP * float(os.environ['RATIO_BTC'])
         BUY_LTC_GBP = BUY_GBP - (BUY_ETH_GBP + BUY_BTC_GBP)
         logging.info(f"GBP funds to use for this run: £{BUY_GBP}")
         logging.info(f"Amount of ETH to buy in GBP: £{BUY_ETH_GBP}")

@@ -8,11 +8,22 @@ Globals:
     Runtime: python3.9
     Handler: app.lambda_handler
     Timeout: 600
-    MemorySize: 500
+    MemorySize: 800
     Layers:
       - !Ref CryptoBuyUtilityLayer
     Architectures:
         - x86_64
+    Environment:
+      Variables:
+        SECRET_BUCKET: "crypto-auto-buy" # S3 bucket containing secrets
+        COINBASE_SECRET_KEY: "cbpro-api-secret.json" # File containing Coinbase Pro API key
+        KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key
+        MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
+        MONTHLY_FUND: 400 # How much in £ to invest per month
+        RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to spend on BTC
+        RATIO_ETH: 0.425 # Proportion of MONTHLY_FUND to spend on ETH
+        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on BTC
+        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on BTC
 
 Parameters:
   SNSEmailParameter:
@@ -34,8 +45,7 @@ Resources:
           Properties:
             Description: Automatically buys cryptocurrencies based on schedule rules
             Enabled: true
-            Schedule: cron(30 6 1,15 * ? *) # Twice a month, 1st and 15th at 6:30am UTC
-            Input: '{"secret_bucket": "crypto-auto-buy", "cb_secret_key": "cbpro-api-secret.json", "kc_secret_key": "kucoin-api-secret.json", "MONTHLY_FREQ": 2, "MONTHLY_FUND": 400, "RATIO_BTC": 0.425, "RATIO_ETH": 0.425, "RATIO_OPCT": 0.1, "RATIO_TRAC": 0.9}'
+            Schedule: cron(30 6 1,15 * ? *) # Twice a month, 1st and 15th at 6:30am UTC - must be consistent with MONTHLY_FREQ global variable
       Policies:
         - LambdaInvokePolicy:
             FunctionName: !Ref CoinbaseBuyFunction
