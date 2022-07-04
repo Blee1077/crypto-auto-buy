@@ -20,10 +20,10 @@ Globals:
         KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key, you put this in (structure is defined in README)
         MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
         MONTHLY_FUND: 400 # How much in £ to invest per month
-        RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to spend on BTC
-        RATIO_ETH: 0.425 # Proportion of MONTHLY_FUND to spend on ETH
-        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on OPCT
-        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to spend on TRAC
+        RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to invest in BTC
+        RATIO_ETH: 0.425 # Proportion of MONTHLY_FUND to invest in ETH
+        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in OPCT
+        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in TRAC
 
 Parameters:
   SNSEmailParameter:
