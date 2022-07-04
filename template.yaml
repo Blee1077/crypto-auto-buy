@@ -116,8 +116,8 @@ Resources:
          - Name: StateMachineArn
            Value: !Ref CryptoBuyStateMachine
       EvaluationPeriods: 1
-      MetricName: Errors
-      Namespace: AWS/Lambda
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
       Statistic: Sum
       Period: 21600
       Threshold: 1
