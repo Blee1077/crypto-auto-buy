@@ -45,14 +45,14 @@ The application uses several AWS resources, including Step Functions state machi
 
 The `template.yaml` contains the following user-defined global environment variables:
 
-- COINBASE_SECRET_KEY - The filename of the JSON file which contains your Coinbase Pro API key, the structure of which is defined in the pre-requisites section above, set to `"cbpro-api-secret.json"` by default.
-- KUCOIN_SECRET_KEY - The filename of the JSON file which contains your KuCoin API key, the structure of which is defined in the pre-requisites section above, set to `"kucoin-api-secret.json"` by default.
-- MONTHLY_FREQ - How many times to buy in a month, set to `2` by default.
-- MONTHLY_FUND - How much in £ to invest per month, set to `400` by default
-- RATIO_BTC - Proportion of MONTHLY_FUND to invest in Bitcoin (BTC), set to `0.425` by default.
-- RATIO_ETH - Proportion of MONTHLY_FUND to invest in Ethereum (ETH), set to `0.425` by default.
-- RATIO_OPCT - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Opacity (OPCT), set to `0.1` by default.
-- RATIO_TRAC - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Origin Trail (TRAC), set to `0.9` by default.
+- `COINBASE_SECRET_KEY` - The filename of the JSON file which contains your Coinbase Pro API key, the structure of which is defined in the pre-requisites section above, set to `"cbpro-api-secret.json"` by default.
+- `KUCOIN_SECRET_KEY` - The filename of the JSON file which contains your KuCoin API key, the structure of which is defined in the pre-requisites section above, set to `"kucoin-api-secret.json"` by default.
+- `MONTHLY_FREQ` - How many times to buy in a month, set to `2` by default.
+- `MONTHLY_FUND` - How much in £ to invest per month, set to `400` by default
+- `RATIO_BTC` - Proportion of MONTHLY_FUND to invest in Bitcoin (BTC), set to `0.425` by default.
+- `RATIO_ETH` - Proportion of MONTHLY_FUND to invest in Ethereum (ETH), set to `0.425` by default.
+- `RATIO_OPCT` - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Opacity (OPCT), set to `0.1` by default.
+- `RATIO_TRAC` - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Origin Trail (TRAC), set to `0.9` by default.
 
 ## Use the SAM CLI to build locally
 
