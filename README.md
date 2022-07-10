@@ -1,4 +1,5 @@
 # Cryptocurrency Auto-buy Application
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/designed-in-etch-a-sketch.svg)](https://forthebadge.com)
 
 The purpose of this project is to create an AWS-based serverless application that purchases a pre-defined set of cryptocurrencies based on a user-defined frequency period and a user-defined amount. The core functionality is an AWS Step Function that runs AWS Lambda functions in a sequence and is scheduled to run on a user-defined frequency using an EventBridge rule, AWS SAM is used to create all the necessary AWS resources to get this application up and running. In the event that the state machine fails, an alarm will be sent to the email used to set up SNS notifications.
 
