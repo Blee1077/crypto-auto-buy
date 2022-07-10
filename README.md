@@ -83,6 +83,10 @@ This command will package and deploy this application to AWS, with a series of p
 * **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this one, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modifies IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to this application.
 
+## Post-deployment
+
+After deploying the application, all the AWS resources defined in the `template.yaml` file will be made in your AWS account. Go to the created S3 bucket and upload both the JSON files containing Coinbase Pro and KuCoin API key details. 
+
 ## Cleanup
 
 To delete the deployed application, use the AWS CLI. Assuming you used this project name for the stack name, you can run the following:
