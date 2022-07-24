@@ -13,7 +13,7 @@ Currently the application takes a three-step approach which utilises two exchang
   <img src="figures/state_machine_definition.png" width="400" title="State machine graph definition">
 </p>
 <p align = "center">
-Visualisation of of steps of the state machine. 
+Visualisation of steps of the state machine. 
 </p>
 <br/>
 
