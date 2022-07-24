@@ -3,8 +3,19 @@
 
 The purpose of this project is to create an AWS-based serverless application that purchases a pre-defined set of cryptocurrencies based on a user-defined frequency period and a user-defined amount. The core functionality is an AWS Step Function that runs AWS Lambda functions in a sequence and is scheduled to run on a user-defined frequency using an EventBridge rule, AWS SAM is used to create all the necessary AWS resources to get this application up and running. In the event that the state machine fails, an alarm will be sent to the email used to set up SNS notifications.
 
-Currently the application takes a three-step approach which utilises two exchanges. The first step is to buy blue-chip (i.e., Bitcoin and Ethereum) cryptocurrencies on Coinbase Pro due to its low trading fees and user-friendly fiat on-ramp process. In addition, Litecoin is also purchased which is then sent to a wallet on the KuCoin exchange. The second step is to check that the Litecoin has been successfully transferred to KuCoin, if not then check again until it is.
-The third and final step is to then utilise the transferred Litecoin to purchase alt-coins which aren't available on Coinbase.
+Currently the application takes a three-step approach which utilises two exchanges:
+1. The first step is to buy blue-chip (i.e., Bitcoin and Ethereum) cryptocurrencies on Coinbase Pro due to its low trading fees and user-friendly fiat on-ramp process. In addition, Litecoin is also purchased which is then sent to a wallet on the KuCoin exchange.
+2. The second step is to check that the Litecoin has been successfully transferred to KuCoin, if not then check again until it is.
+3. The third and final step is to then utilise the transferred Litecoin to purchase alt-coins which aren't available on Coinbase.
+
+<br/>
+<p align="center">
+  <img src="figures/state_machine_definition.png" width="400" title="State machine graph definition">
+</p>
+<p align = "center">
+Visualisation of of steps of the state machine. 
+</p>
+<br/>
 
 This project contains source code and supporting files for the serverless application that you can deploy with the SAM CLI. It includes the following files and folders:
 
@@ -25,18 +36,18 @@ The application uses several AWS resources, including Step Functions state machi
 
     ```yaml
     {
-        "secret": PUT_SECRET_HERE
-        "key": PUT_KEY_HERE
-        "passphrase": PUT_PASSPHRASE_HERE
+        "secret": "PUT_SECRET_HERE"           # Secret for Coinbase Pro API as string
+        "key": "PUT_KEY_HERE"                 # Key for Coinbase Pro API as string
+        "passphrase": "PUT_PASSPHRASE_HERE"   # Passphrase for Coinbase Pro API as string
     }
     ```
 6. A JSON file named `"kucoin-api-secret.json"` containing your KuCoin API key details ([instructions here to create API key](https://www.kucoin.com/support/360015102174-How-to-Create-an-API)) with the following structure:
 
     ```yaml
     {
-        "secret": PUT_SECRET_HERE
-        "key": PUT_KEY_HERE
-        "passphrase": PUT_PASSPHRASE_HERE
+        "secret": "PUT_SECRET_HERE"          # Secret for KuCoin API as string
+        "key": "PUT_KEY_HERE"                # Key for KuCoin API as string
+        "passphrase": "PUT_PASSPHRASE_HERE"  # Passphrase for KuCoin API as string
     }
     ```
 
@@ -54,11 +65,9 @@ The `template.yaml` contains the following user-defined global environment varia
 - `RATIO_OPCT` - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Opacity (OPCT), set to `0.1` by default.
 - `RATIO_TRAC` - Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in Origin Trail (TRAC), set to `0.9` by default.
 
-## Use the SAM CLI to build locally
+## Build the application
 
-The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
-
-Build this application with the `sam build --use-container` command. The `use-container` option makes it so that the build happens inside a Lambda-like container.
+The Serverless Application Model Command Line Interface (SAM CLI) is needed to build and deploy this application. Build this application with the `sam build --use-container` command. The `use-container` option makes it so that the build happens inside a Lambda-like container.
 
 ```bash
 sam build --use-container
