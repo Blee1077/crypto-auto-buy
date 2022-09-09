@@ -26,7 +26,7 @@ This project contains source code and supporting files for the serverless applic
 - util_layer - Utility functions that are shared across Lambda functions.
 - template.yaml - A template that defines the application's AWS resources.
 
-The application uses several AWS resources, including Step Functions state machines, Lambda functions and an EventBridge rule trigger. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
+The application uses several AWS resources, including Step Functions state machines, Lambda functions and an EventBridge rule trigger. These resources are defined in the `template.yaml` file in this project.
 
 ## Pre-requisites
 
