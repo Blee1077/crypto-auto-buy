@@ -39,10 +39,11 @@ def lambda_handler(event, context):
         wait_counter = 0
         ETH_acc = client.get_accounts('ETH', 'trade')[0]
         while (ETH_acc['available'] == 0) and (wait_counter < 24):
-            time.sleep(5)
+            time.sleep(30)
             ETH_acc = client.get_accounts('ETH', 'trade')[0]
             wait_counter += 1
         assert(wait_counter < 24), "Took too long for ETH to become available to be used\n"
+        time.sleep(60) # Wait a bit more just to be safe - no rush
         
         # Calculate how much to use to buy ETH and LTC, denominator takes into account the trading fee
         ETH_precision = client.get_currency('ETH')['precision']
