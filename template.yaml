@@ -9,21 +9,18 @@ Globals:
     Handler: app.lambda_handler
     Timeout: 600
     MemorySize: 128
-    Layers:
-      - !Ref CryptoBuyUtilityLayer
     Architectures:
         - x86_64
     Environment:
       Variables:
         SECRET_BUCKET: !Ref CryptoBuyS3Bucket # Name of automatically deployed S3 bucket containing secrets.
-        COINBASE_SECRET_KEY: "cbpro-api-secret.json" # File containing Coinbase Pro API key, you put this in (structure is defined in README)
-        KUCOIN_SECRET_KEY: "kucoin-api-secret.json" # File containing KuCoin API key, you put this in (structure is defined in README)
+        KRAKEN_SECRET_KEY: "kraken_secrets.json" # File containing Kraken API key, you put this in (structure is defined in README)
         MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
-        MONTHLY_FUND: 400 # How much in £ to invest per month
-        RATIO_BTC: 0.425 # Proportion of MONTHLY_FUND to invest in BTC
-        RATIO_ETH: 0.425 # Proportion of MONTHLY_FUND to invest in ETH
-        RATIO_OPCT: 0.1 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in OPCT
-        RATIO_TRAC: 0.9 # Proportion of (1 - RATIO_BTC - RATIO_ETH) * MONTHLY_FUND to invest in TRAC
+        MONTHLY_FUND: 300 # How much in £ to invest per month
+        RATIO_BTC: 0.5 # Proportion of MONTHLY_FUND to invest in BTC
+        RATIO_ETH: 0.5 # Proportion of MONTHLY_FUND to invest in ETH
+        ETH_WITHDRAW_THRESH: 600 # How much £ in ETH balance before withdrawing
+        BTC_WITHDRAW_THRESH: 300 # How much £ in BTC balance before withdrawing
 
 Parameters:
   SNSEmailParameter:
@@ -31,29 +28,6 @@ Parameters:
     Description: Enter email address for execution failure SNS topic subscription.
 
 Resources:
-  CryptoBuyStateMachine:
-    Type: AWS::Serverless::StateMachine
-    Properties:
-      DefinitionUri: statemachine/crypto_autobuy.asl.json
-      DefinitionSubstitutions:
-        CoinbaseBuyFunctionArn: !GetAtt CoinbaseBuyFunction.Arn
-        KuCoinBuyFunctionArn: !GetAtt KuCoinBuyFunction.Arn
-        KuCoinWaitFunctionArn: !GetAtt KuCoinWaitFunction.Arn
-      Events:
-        CryptoBuySchedule:
-          Type: Schedule
-          Properties:
-            Description: Automatically buys cryptocurrencies based on schedule rules
-            Enabled: true
-            Schedule: cron(30 6 1,15 * ? *) # Twice a month, 1st and 15th at 6:30am UTC - must be consistent with MONTHLY_FREQ global variable
-      Policies:
-        - LambdaInvokePolicy:
-            FunctionName: !Ref CoinbaseBuyFunction
-        - LambdaInvokePolicy:
-            FunctionName: !Ref KuCoinBuyFunction
-        - LambdaInvokePolicy:
-            FunctionName: !Ref KuCoinWaitFunction
-
   CryptoBuyS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -65,38 +39,22 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
-  CryptoBuyUtilityLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      ContentUri: util_layer
-      CompatibleRuntimes:
-        - python3.9
-    Metadata:
-      BuildMethod: python3.9
-
-  CoinbaseBuyFunction:
+  KrakenBuyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/coinbase_buy/
+      CodeUri: kraken_buy
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref CryptoBuyS3Bucket
-
-  KuCoinBuyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/kucoin_buy/
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref CryptoBuyS3Bucket
-
-  KuCoinWaitFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/kucoin_wait/
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref CryptoBuyS3Bucket
+      Events:
+        CryptoBuySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(30 6 3,18 * ? *) # Twice a month, 3rd and 18th at 6:30am UTC - must be consistent with MONTHLY_FREQ global variable
+            Description: Automatically buys cryptocurrencies based on schedule rules.
+            Enabled: true
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
 
   CryptoBuyTopic:
     Type: AWS::SNS::Topic
@@ -109,26 +67,17 @@ Resources:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
       ActionsEnabled: true
-      AlarmDescription: 'Sends an alarm when the crypto auto-buy state machine fails.'
+      AlarmDescription: 'Sends an alarm when the Kraken auto-buy script fails.'
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
-         - Name: StateMachineArn
-           Value: !Ref CryptoBuyStateMachine
+        - Name: FunctionName
+          Value: !Ref KrakenBuyFunction
       EvaluationPeriods: 1
       MetricName: ExecutionsFailed
-      Namespace: AWS/States
+      Namespace: AWS/Lambda
       Statistic: Sum
       Period: 21600
       Threshold: 1
       TreatMissingData: notBreaching
       AlarmActions:
         - !Ref CryptoBuyTopic
-
-Outputs:
-  # CryptoBuySchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
-  CryptoBuyStateMachineArn:
-    Description: "Crypto AutoBuy State machine ARN"
-    Value: !Ref CryptoBuyStateMachine
-  CryptoBuyStateMachineRoleArn:
-    Description: "IAM Role created for Crypto AutoBuy State machine based on the specified SAM Policy Templates"
-    Value: !GetAtt CryptoBuyStateMachineRole.Arn
