@@ -73,7 +73,7 @@ Resources:
         - Name: FunctionName
           Value: !Ref KrakenBuyFunction
       EvaluationPeriods: 1
-      MetricName: ExecutionsFailed
+      MetricName: Errors
       Namespace: AWS/Lambda
       Statistic: Sum
       Period: 21600

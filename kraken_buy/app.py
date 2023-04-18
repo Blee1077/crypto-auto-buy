@@ -86,7 +86,7 @@ def lambda_handler(event, context):
         BTC_BAL = balance_df.loc['XXBT']['vol']
         
         # Withdrawal fee for ETH is 0.0035 which is ~£5 as of 2023/02/03 -> expensive to withdraw
-        if ETH_BAL * ETH_PRICE >= float(os.environ['ETH_WITHDRAW_THRESH']):
+        if (ETH_BAL * ETH_PRICE.iloc[0]['open']) >= float(os.environ['ETH_WITHDRAW_THRESH']):
             try:
                 client.withdraw_funds('ETH Ledger Nano S+', asset='XETH', amount=ETH_BAL)
                 logging.info(f"Successfully withdrew {ETH_BAL} ETH to cold wallet")
@@ -97,7 +97,7 @@ def lambda_handler(event, context):
             logging.info(f"ETH balance has not hit threshold to withdraw.")
         
         # Withdrawal fee for BTC is 0.00001 which is £0.19 as of 2023/02/03 -> cheap to withdraw
-        if BTC_BAL * BTC_PRICE >= float(os.environ['BTC_WITHDRAW_THRESH']):
+        if (BTC_BAL * BTC_PRICE.iloc[0]['open']) >= float(os.environ['BTC_WITHDRAW_THRESH']):
             try:
                 client.withdraw_funds('BTC Ledger Nano S+', asset='XXBT', amount=BTC_BAL)
                 logging.info(f"Successfully withdrew {BTC_BAL} BTC to cold wallet")
