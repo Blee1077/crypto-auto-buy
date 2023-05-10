@@ -15,17 +15,41 @@ Globals:
       Variables:
         SECRET_BUCKET: !Ref CryptoBuyS3Bucket # Name of automatically deployed S3 bucket containing secrets.
         KRAKEN_SECRET_KEY: "kraken_secrets.json" # File containing Kraken API key, you put this in (structure is defined in README)
-        MONTHLY_FREQ: 2 # Number of times to buy in a month - must be consistent with CryptoBuySchedule schedule
-        MONTHLY_FUND: 300 # How much in £ to invest per month
-        RATIO_BTC: 0.5 # Proportion of MONTHLY_FUND to invest in BTC
-        RATIO_ETH: 0.5 # Proportion of MONTHLY_FUND to invest in ETH
-        ETH_WITHDRAW_THRESH: 600 # How much £ in ETH balance before withdrawing
-        BTC_WITHDRAW_THRESH: 300 # How much £ in BTC balance before withdrawing
+        MONTHLY_FREQ: !Ref MonthlyFrequency
+        MONTHLY_FUND: !Ref MonthlyFund
+        RATIO_BTC: !Ref RatioBTC
+        RATIO_ETH: !Ref RatioETH
+        ETH_WITHDRAW_THRESH: !Ref ETHWithdrawThreshold
+        BTC_WITHDRAW_THRESH: !Ref BTCWithdrawThreshold
 
 Parameters:
   SNSEmailParameter:
     Type: String
     Description: Enter email address for execution failure SNS topic subscription.
+  MonthlyFrequency:
+    Type: Number
+    Description: Number of times to buy in a month.
+    Default: 2
+  MonthlyFund:
+    Type: Number
+    Description: How much in £ to invest per month.
+    Default: 300
+  RatioBTC:
+    Type: Number
+    Description: Proportion of MONTHLY_FUND to invest in BTC.
+    Default: 0.5
+  RatioETH:
+    Type: Number
+    Description: Proportion of MONTHLY_FUND to invest in ETH.
+    Default: 0.5
+  ETHWithdrawThreshold:
+    Type: Number
+    Description: How much £ in ETH balance before withdrawing.
+    Default: 600
+  BTCWithdrawThreshold:
+    Type: Number
+    Description: How much £ in BTC balance before withdrawing.
+    Default: 300
 
 Resources:
   CryptoBuyS3Bucket:
@@ -33,6 +57,10 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -81,3 +109,11 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - !Ref CryptoBuyTopic
+
+Outputs:
+  KrakenBuyFunction:
+    Description: "Kraken Buy Function ARN"
+    Value: !GetAtt KrakenBuyFunction.Arn
+  CryptoBuyTopic:
+    Description: "Crypto Buy SNS Topic ARN"
+    Value: !Ref CryptoBuyTopic
